@@ -63,30 +63,24 @@
   addButton.addEventListener('click', function () {
     const nameInput = document.querySelector('.add-form-name');
     const textInput = document.querySelector('.add-form-text');
-    const userName = nameInput.value;
-    const commentText = textInput.value;
+    const userName = nameInput.value.trim();
+    const commentText = textInput.value.trim();
 
-    const newComment = document.createElement('li');
-    newComment.classList.add('comment');
+    if (userName === '' || commentText === '') {
+      alert('Пожалуйста, введите ваше имя и комментарий.');
+      return;
+    }
 
-    newComment.innerHTML = `
-    <div class="comment-header">
-      <div>${userName}</div>
-      <div>${getCurrentDate()}</div>
-    </div>
-    <div class="comment-body">
-      <div class="comment-text">${commentText}</div>
-    </div>
-    <div class="comment-footer">
-      <div class="likes">
-        <span class="likes-counter">0</span>
-        <button class="like-button"></button>
-      </div>
-    </div>
-  `;
+    const newComment = {
+      author: userName,
+      date: getCurrentDate(),
+      text: commentText,
+      likes: 0,
+      isLiked: false
+    };
 
-    const commentsContainer = document.querySelector('.comments');
-    commentsContainer.appendChild(newComment);
+    commentsData.push(newComment);
+    renderComments();
   });
 
   function getCurrentDate() {
@@ -100,6 +94,70 @@
   }
 
   console.log("It works!");
+
+  const commentsContainer = document.querySelector('.comments');
+
+  commentsContainer.addEventListener('click', function (event) {
+    if (event.target.classList.contains('like-button')) {
+      const commentIndex = Array.from(this.children).indexOf(event.target.closest('.comment'));
+      if (commentIndex !== -1) {
+        commentsData[commentIndex].isLiked = !commentsData[commentIndex].isLiked;
+        if (commentsData[commentIndex].isLiked) {
+          commentsData[commentIndex].likes++;
+        } else {
+          commentsData[commentIndex].likes--;
+        }
+        renderComments();
+      }
+    }
+  });
+
+  function renderComments() {
+    commentsContainer.innerHTML = ''; // Очищаем контейнер перед рендерингом
+
+    commentsData.forEach(comment => {
+      const newComment = document.createElement('li');
+      newComment.classList.add('comment');
+
+      newComment.innerHTML = `
+        <div class="comment-header">
+          <div>${comment.author}</div>
+          <div>${comment.date}</div>
+        </div>
+        <div class="comment-body">
+          <div class="comment-text">${comment.text}</div>
+        </div>
+        <div class="comment-footer">
+          <div class="likes">
+            <span class="likes-counter">${comment.likes}</span>
+            <button class="like-button ${comment.isLiked ? '-active-like' : ''}"></button>
+          </div>
+        </div>
+      `;
+
+      commentsContainer.appendChild(newComment);
+    });
+  }
+
+  const commentsData = [
+    {
+      author: 'Глеб Фокин',
+      date: '12.02.22 12:18',
+      text: 'Это будет первый комментарий на этой странице',
+      likes: 3,
+      isLiked: false
+    },
+    {
+      author: 'Варвара Н.',
+      date: '13.02.22 19:22',
+      text: 'Мне нравится как оформлена эта страница! ❤',
+      likes: 75,
+      isLiked: true
+    }
+  ];
+
+  renderComments();
+
 </script>
 
 </html>
