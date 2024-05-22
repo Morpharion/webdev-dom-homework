@@ -9,45 +9,10 @@
 
 <body>
   <div class="container">
-    <ul class="comments">
-      <li class="comment">
-        <div class="comment-header">
-          <div>Глеб Фокин</div>
-          <div>12.02.22 12:18</div>
-        </div>
-        <div class="comment-body">
-          <div class="comment-text">
-            Это будет первый комментарий на этой странице
-          </div>
-        </div>
-        <div class="comment-footer">
-          <div class="likes">
-            <span class="likes-counter">3</span>
-            <button class="like-button"></button>
-          </div>
-        </div>
-      </li>
-      <li class="comment">
-        <div class="comment-header">
-          <div>Варвара Н.</div>
-          <div>13.02.22 19:22</div>
-        </div>
-        <div class="comment-body">
-          <div class="comment-text">
-            Мне нравится как оформлена эта страница! ❤
-          </div>
-        </div>
-        <div class="comment-footer">
-          <div class="likes">
-            <span class="likes-counter">75</span>
-            <button class="like-button -active-like"></button>
-          </div>
-        </div>
-      </li>
-    </ul>
+    <ul class="comments"></ul>
     <div class="add-form">
-      <input type="text" class="add-form-name" placeholder="Введите ваше имя" />
-      <textarea type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
+      <input type="text" class="add-form-name" placeholder="Введите ваше имя" autocomplete="off" />
+      <textarea type="textarea" class="add-form-text" placeholder="Введите ваш комментарий" rows="4"></textarea>
       <div class="add-form-row">
         <button class="add-form-button">Написать</button>
       </div>
@@ -57,12 +22,12 @@
 
 <script>
   "use strict";
-  // Код писать здесь
+
   const addButton = document.querySelector('.add-form-button');
+  const nameInput = document.querySelector('.add-form-name');
+  const textInput = document.querySelector('.add-form-text');
 
   addButton.addEventListener('click', function () {
-    const nameInput = document.querySelector('.add-form-name');
-    const textInput = document.querySelector('.add-form-text');
     const userName = nameInput.value.trim();
     const commentText = textInput.value.trim();
 
@@ -72,16 +37,28 @@
     }
 
     const newComment = {
-      author: userName,
+      author: escapeHtml(userName),
       date: getCurrentDate(),
-      text: commentText,
+      text: escapeHtml(commentText),
       likes: 0,
       isLiked: false
     };
 
     commentsData.push(newComment);
     renderComments();
+
+    nameInput.value = '';
+    textInput.value = '';
   });
+
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
   function getCurrentDate() {
     const currentDate = new Date();
@@ -92,8 +69,6 @@
     const minutes = currentDate.getMinutes().toString().padStart(2, '0');
     return `${day}.${month}.${year} ${hours}:${minutes}`;
   }
-
-  console.log("It works!");
 
   const commentsContainer = document.querySelector('.comments');
 
@@ -109,15 +84,25 @@
         }
         renderComments();
       }
+    } else if (event.target.closest('.comment')) {
+      const commentIndex = Array.from(this.children).indexOf(event.target.closest('.comment'));
+      if (commentIndex !== -1) {
+        const comment = commentsData[commentIndex];
+        textInput.value = `QUOTE_BEGIN ${comment.text} QUOTE_END\n`;
+      }
     }
   });
 
   function renderComments() {
-    commentsContainer.innerHTML = ''; // Очищаем контейнер перед рендерингом
+    commentsContainer.innerHTML = '';
 
     commentsData.forEach(comment => {
       const newComment = document.createElement('li');
       newComment.classList.add('comment');
+
+      const formattedText = comment.text
+        .replaceAll("QUOTE_BEGIN", "<div class='quote'>")
+        .replaceAll("QUOTE_END", "</div>");
 
       newComment.innerHTML = `
         <div class="comment-header">
@@ -125,7 +110,7 @@
           <div>${comment.date}</div>
         </div>
         <div class="comment-body">
-          <div class="comment-text">${comment.text}</div>
+          <div class="comment-text" style="white-space: pre-line;">${formattedText}</div>
         </div>
         <div class="comment-footer">
           <div class="likes">
