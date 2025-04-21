@@ -45,13 +45,15 @@
     ];
 
     function escapeHtml(unsafe) {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+    .replace(/\/>/g, "&#47;"); // Добавим экранирование для закрывающих тэгов
+}
+
 
     function getCurrentDate() {
       const currentDate = new Date();
@@ -131,7 +133,7 @@
         renderComments();
       } else {
         const comment = commentsData[commentIndex];
-        textInput.value = `QUOTE_BEGIN ${comment.text} QUOTE_END\n`;
+        textInput.value = `QUOTE_BEGIN ${comment.author}: ${comment.text} QUOTE_END\n`;
       }
     });
 
