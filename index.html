@@ -45,15 +45,13 @@
     ];
 
     function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
-    .replace(/\/>/g, "&#47;"); // Добавим экранирование для закрывающих тэгов
-}
-
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     function getCurrentDate() {
       const currentDate = new Date();
@@ -78,8 +76,8 @@
 
         newComment.innerHTML = `
           <div class="comment-header">
-            <div>${comment.author}</div>
-            <div>${comment.date}</div>
+            <div>${escapeHtml(comment.author)}</div>
+            <div>${escapeHtml(comment.date)}</div>
           </div>
           <div class="comment-body">
             <div class="comment-text" style="white-space: pre-line;">${formattedText}</div>
@@ -131,9 +129,14 @@
         commentsData[commentIndex].isLiked = !commentsData[commentIndex].isLiked;
         commentsData[commentIndex].likes += commentsData[commentIndex].isLiked ? 1 : -1;
         renderComments();
+        event.stopPropagation();
+
       } else {
         const comment = commentsData[commentIndex];
-        textInput.value = `QUOTE_BEGIN ${comment.author}: ${comment.text} QUOTE_END\n`;
+        const quoteText = comment.text
+          .replaceAll("QUOTE_BEGIN", "")
+          .replaceAll("QUOTE_END", "");
+        textInput.value = `QUOTE_BEGIN ${comment.author}: ${quoteText} QUOTE_END\n`;
       }
     });
 
