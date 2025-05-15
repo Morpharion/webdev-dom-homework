@@ -66,9 +66,10 @@
     function renderComments() {
       commentsContainer.innerHTML = '';
 
-      commentsData.forEach((comment) => {
+      commentsData.forEach((comment, index) => {
         const newComment = document.createElement('li');
         newComment.classList.add('comment');
+        newComment.dataset.index = index;
 
         const formattedText = comment.text
           .replaceAll("QUOTE_BEGIN", "<div class='quote'>")
@@ -85,12 +86,23 @@
           <div class="comment-footer">
             <div class="likes">
               <span class="likes-counter">${comment.likes}</span>
-              <button class="like-button ${comment.isLiked ? '-active-like' : ''}"></button>
+              <button class="like-button ${comment.isLiked ? '-active-like' : ''}" data-index="${index}"></button>
             </div>
           </div>
         `;
 
         commentsContainer.appendChild(newComment);
+      });
+
+      document.querySelectorAll('.like-button').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          console.log('Клик по лайку');
+          event.stopPropagation();
+          const index = button.dataset.index;
+          commentsData[index].isLiked = !commentsData[index].isLiked;
+          commentsData[index].likes += commentsData[index].isLiked ? 1 : -1;
+          renderComments();
+        });
       });
     }
 
@@ -119,25 +131,18 @@
     });
 
     commentsContainer.addEventListener('click', function (event) {
+      console.log('Клик по комментарию');
       const commentElement = event.target.closest('.comment');
-
       if (!commentElement) return;
 
-      const commentIndex = Array.from(commentsContainer.children).indexOf(commentElement);
+      const commentIndex = commentElement.dataset.index;
+      const comment = commentsData[commentIndex];
 
-      if (event.target.classList.contains('like-button')) {
-        commentsData[commentIndex].isLiked = !commentsData[commentIndex].isLiked;
-        commentsData[commentIndex].likes += commentsData[commentIndex].isLiked ? 1 : -1;
-        renderComments();
-        event.stopPropagation();
+      const quoteText = comment.text
+        .replaceAll("QUOTE_BEGIN", "")
+        .replaceAll("QUOTE_END", "");
 
-      } else {
-        const comment = commentsData[commentIndex];
-        const quoteText = comment.text
-          .replaceAll("QUOTE_BEGIN", "")
-          .replaceAll("QUOTE_END", "");
-        textInput.value = `QUOTE_BEGIN ${comment.author}: ${quoteText} QUOTE_END\n`;
-      }
+      textInput.value = `QUOTE_BEGIN ${comment.author}: ${quoteText} QUOTE_END\n`;
     });
 
     renderComments();
@@ -145,5 +150,3 @@
 </body>
 
 </html>
-<!-- 
-1111111111111 -->
