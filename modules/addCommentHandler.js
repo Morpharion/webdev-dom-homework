@@ -3,12 +3,13 @@ import { getCurrentDate } from './formatDate.js'
 import { postComment } from './api.js'
 import { renderComments } from './renderComments.js'
 
-export function setupAddCommentHandler(comments) {
+export function setupAddCommentHandler(comments, loadComments) {
     const addButton = document.querySelector('.add-form-button')
     const nameInput = document.querySelector('.add-form-name')
     const textInput = document.querySelector('.add-form-text')
+    const formElement = document.querySelector('.add-form')
 
-    addButton.addEventListener('click', async () => {
+    addButton.addEventListener('click', () => {
         const userName = nameInput.value.trim()
         const commentText = textInput.value.trim()
 
@@ -17,28 +18,35 @@ export function setupAddCommentHandler(comments) {
             return
         }
 
-        try {
-            await postComment({
-                name: userName,
-                text: commentText,
+        // Скрываем форму и показываем сообщение
+        formElement.style.display = 'none'
+
+        const loadingMessage = document.createElement('p')
+        loadingMessage.textContent = 'Комментарий добавляется...'
+        loadingMessage.classList.add('add-loader')
+        formElement.parentNode.insertBefore(loadingMessage, formElement)
+
+        postComment({
+            name: userName,
+            text: commentText,
+        })
+            .then(() => {
+                nameInput.value = ''
+                textInput.value = ''
+
+                // Удаляем сообщение, показываем форму
+                loadingMessage.remove()
+                formElement.style.display = 'flex'
+
+                // Перезагружаем комментарии с сервера
+                return loadComments()
             })
-
-            comments.push({
-                author: { name: escapeHtml(userName) },
-                date: getCurrentDate(),
-                text: escapeHtml(commentText),
-                likes: 0,
-                isLiked: false,
+            .catch((error) => {
+                loadingMessage.remove()
+                formElement.style.display = 'flex'
+                alert('Ошибка при отправке комментария')
+                console.error(error)
             })
-
-            renderComments(comments)
-
-            nameInput.value = ''
-            textInput.value = ''
-        } catch (error) {
-            alert('Ошибка при отправке комментария')
-            console.error(error)
-        }
     })
 }
 
