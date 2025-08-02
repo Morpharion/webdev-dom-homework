@@ -44,7 +44,17 @@ export function setupAddCommentHandler(comments, loadComments) {
             .catch((error) => {
                 loadingMessage.remove()
                 formElement.style.display = 'flex'
-                alert('Ошибка при отправке комментария')
+
+                if (error.message === '400') {
+                    alert('Имя и комментарий должны быть не короче 3 символов')
+                } else if (error.message === '500') {
+                    alert('Сервер сломался, попробуй позже')
+                } else if (error.message === 'network') {
+                    alert('Кажется, у вас сломался интернет, попробуйте позже')
+                } else {
+                    alert('Ошибка при отправке комментария')
+                }
+
                 console.error(error)
             })
     })

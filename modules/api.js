@@ -17,16 +17,30 @@ export function postComment({ name, text }) {
         body: JSON.stringify({
             name: name.trim(),
             text: text.trim(),
-            forceError: false,
+            forceError: false, // имитация ошибки 500 при значении true
         }),
-    }).then((response) => {
-        if (!response.ok) {
-            return response.json().then((data) => {
-                throw new Error(
-                    data.error || 'Ошибка при добавлении комментария',
-                )
-            })
-        }
-        return response.json()
     })
+        .then((response) => {
+            if (response.status === 400) {
+                throw new Error('400')
+            }
+
+            if (response.status === 500) {
+                throw new Error('500')
+            }
+
+            if (!response.ok) {
+                throw new Error('unknown error')
+            }
+
+            return response.json()
+        })
+        .catch((error) => {
+            if (error.message === '400' || error.message === '500') {
+                throw error
+            }
+
+            // Ошибка сети
+            throw new Error('network error')
+        })
 }
