@@ -4,13 +4,14 @@ import { setupAddCommentHandler } from './modules/addCommentHandler.js'
 
 const commentsContainer = document.querySelector('.comments')
 
-function loadComments() {
-    commentsContainer.innerHTML = '<p>Загрузка комментариев...</p>'
+function loadComments(showLoader = true) {
+    if (showLoader) {
+        commentsContainer.innerHTML = '<p>Загрузка комментариев...</p>'
+    }
 
     return fetchComments()
         .then((comments) => {
             renderComments(comments)
-            setupAddCommentHandler(comments, loadComments)
         })
         .catch((error) => {
             console.error('Ошибка загрузки комментариев', error)
@@ -18,4 +19,5 @@ function loadComments() {
         })
 }
 
+setupAddCommentHandler(loadComments)
 loadComments()

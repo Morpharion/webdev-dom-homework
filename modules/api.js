@@ -41,6 +41,6 @@ export function postComment({ name, text }) {
             }
 
             // Ошибка сети
-            throw new Error('network error')
+            throw new Error('network')
         })
 }
