@@ -2,7 +2,7 @@ import { postComment } from './api.js'
 
 let hasListener = false
 
-export function setupAddCommentHandler(loadComments) {
+export function setupAddCommentHandler(loadComments, user) {
     const addButton = document.querySelector('.add-form-button')
     const nameInput = document.querySelector('.add-form-name')
     const textInput = document.querySelector('.add-form-text')
@@ -12,11 +12,10 @@ export function setupAddCommentHandler(loadComments) {
     hasListener = true
 
     addButton.addEventListener('click', () => {
-        const userName = nameInput.value.trim()
         const commentText = textInput.value.trim()
 
-        if (userName.length < 3 || commentText.length < 3) {
-            alert('Имя и комментарий должны содержать минимум 3 символа')
+        if (commentText.length < 3) {
+            alert('Комментарий должен содержать минимум 3 символа')
             return
         }
 
@@ -29,11 +28,9 @@ export function setupAddCommentHandler(loadComments) {
         formElement.parentNode.insertBefore(loadingMessage, formElement)
 
         postComment({
-            name: userName,
             text: commentText,
         })
             .then(() => {
-                nameInput.value = ''
                 textInput.value = ''
 
                 // Удаляем сообщение, показываем форму
@@ -47,14 +44,15 @@ export function setupAddCommentHandler(loadComments) {
                 loadingMessage.remove()
                 formElement.style.display = 'flex'
 
-                if (error.message === '400') {
-                    alert('Имя и комментарий должны быть не короче 3 символов')
-                } else if (error.message === '500') {
-                    alert('Сервер сломался, попробуй позже')
+                if (error.message.includes('3 символа') || error.message === 'Ошибка валидации') {
+                    alert('Комментарий должен быть не короче 3 символов')
+                } else if (error.message === 'Требуется авторизация') {
+                    alert('Требуется авторизация. Пожалуйста, войдите снова.')
+                    window.location.href = '?login=true'
                 } else if (error.message === 'network') {
                     alert('Кажется, у вас сломался интернет, попробуйте позже')
                 } else {
-                    alert('Ошибка при отправке комментария')
+                    alert(error.message || 'Ошибка при отправке комментария')
                 }
 
                 console.error(error)

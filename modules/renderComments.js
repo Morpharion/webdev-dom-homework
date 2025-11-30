@@ -1,8 +1,26 @@
 import { applyQuoteFormatting, stripQuoteTags } from './replaceQuotes.js'
+import { escapeHtml } from './escapeHtml.js'
 
 export function renderComments(commentsData) {
     const commentsContainer = document.querySelector('.comments')
+    
+    if (!commentsContainer) {
+        console.error('Контейнер .comments не найден!')
+        return
+    }
+    
+    if (!commentsData || !Array.isArray(commentsData)) {
+        console.error('Некорректные данные комментариев:', commentsData)
+        commentsContainer.innerHTML = '<p>Ошибка: некорректные данные комментариев</p>'
+        return
+    }
+    
     commentsContainer.innerHTML = ''
+
+    if (commentsData.length === 0) {
+        commentsContainer.innerHTML = '<p>Пока нет комментариев</p>'
+        return
+    }
 
     commentsData.forEach((comment, index) => {
         const newComment = document.createElement('li')
@@ -14,11 +32,16 @@ export function renderComments(commentsData) {
             comment.isLiked = false
         }
 
-        const formattedText = applyQuoteFormatting(comment.text)
+        // Экранируем текст перед форматированием для защиты от XSS
+        const escapedText = escapeHtml(comment.text)
+        const formattedText = applyQuoteFormatting(escapedText)
+
+        // Экранируем имя автора
+        const authorName = escapeHtml(comment.author.name ?? comment.author)
 
         newComment.innerHTML = `
       <div class="comment-header">
-        <div>${comment.author.name ?? comment.author}</div>
+        <div>${authorName}</div>
         <div>${new Date(comment.date).toLocaleString()}</div>
       </div>
       <div class="comment-body">
@@ -43,7 +66,9 @@ export function renderComments(commentsData) {
 
         newComment.addEventListener('click', () => {
             const textInput = document.querySelector('.add-form-text')
-            textInput.value = `QUOTE_BEGIN ${comment.author.name ?? comment.author}: ${stripQuoteTags(comment.text)} QUOTE_END\n`
+            if (textInput) {
+                textInput.value = `QUOTE_BEGIN ${comment.author.name ?? comment.author}: ${stripQuoteTags(comment.text)} QUOTE_END\n`
+            }
         })
 
         commentsContainer.appendChild(newComment)
