@@ -113,7 +113,7 @@ export function postComment({ text }) {
     return fetch(`${BASE_URL}/comments`, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
             text: text.trim(),
@@ -147,9 +147,11 @@ export function postComment({ text }) {
         })
         .catch((error) => {
             // Если это уже обработанная ошибка, пробрасываем её дальше
-            if (error.message === 'Требуется авторизация' || 
+            if (
+                error.message === 'Требуется авторизация' ||
                 error.message === 'Ошибка валидации' ||
-                error.message.includes('3 символа')) {
+                error.message.includes('3 символа')
+            ) {
                 throw error
             }
 
